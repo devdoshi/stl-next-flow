@@ -29,6 +29,8 @@ jobs:
           path: release-please
       - name: Checkout code
         uses: actions/checkout@v3
+        with:
+          path: project
 
       - run: pwd
       - run: ls -la
