@@ -1,6 +1,10 @@
 # on a pull request from next to main
 name: Draft Release
 
+permissions:
+  contents: write
+  pull-requests: write
+  
 on:
   pull_request:
     branches:
@@ -25,7 +29,9 @@ jobs:
           path: release-please
 
       - run: ls -la
-      - run: npm install && npm run compile
+
+      - name: install modified release please
+        run: npm install
         working-directory: release-please
 
       - run: |
