@@ -1,0 +1,25 @@
+# on a pull request from next to main
+name: Draft Release
+
+on:
+  pull_request:
+    branches:
+      - next
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ensure this is a pull request from next to main
+        run: exit 1
+        if: github.event_name == 'pull_request' && github.event.pull_request.base.ref != 'main'
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.x
+      - run: ls -la $HOME
+      - name: install release-please
+        run: npm install -g git+https://github.com/devdoshi/release-please.git
+      - run: ls -la $(which release-please)
