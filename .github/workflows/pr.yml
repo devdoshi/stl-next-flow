@@ -56,22 +56,25 @@ jobs:
           GITHUB_ACTIONS_AUTHOR="devdoshi[bot]"
 
           if [ "$AUTHOR" == "$GITHUB_ACTIONS_AUTHOR" ]; then
-          echo "last was made by gha, reset and commit"
+          echo "last commit was made by bot, reset and apply the changes"
           git reset --hard HEAD^
           else
-          echo "last was not made by gha, just commit"
+          echo "last commit was not made by bot, just apply the changes"
           fi
           git apply ../release-please/patch.diff
         working-directory: project
-      - run: git diff
-        working-directory: project
-      # if we just add what's already in git, we might miss new files like the first changelog.md, etc.
-      # - run: git diff --name-only | xargs -I{} git add {}
+        # if we just add what's already in git, we might miss new files like the first changelog.md, etc.
+        # - run: git diff --name-only | xargs -I{} git add {}
       - run: |
-          jq ".updates[].path" < ../release-please/pr.json | xargs -I{} git add {} || true
-        working-directory: project
-      - run: |
-          git config user.name "devdoshi[bot]"
-          git config user.email 'devdoshi+github-actions-bot@users.noreply.github.com'
-          git commit -m 'chore: release'
+          git diff
+          if [ $? -eq 0 ]; then
+            echo "No differences found."
+          else
+            echo "There are differences."
+            jq ".updates[].path" < ../release-please/pr.json | xargs -I{} git add {} || true
+            git config user.name "devdoshi[bot]"
+            git config user.email 'devdoshi+github-actions-bot@users.noreply.github.com'
+            git commit -m 'chore: release'
+            git push --force-with-lease origin ${{github.event.pull_request.head.ref}}
+          fi
         working-directory: project
