@@ -66,8 +66,10 @@ jobs:
         # if we just add what's already in git, we might miss new files like the first changelog.md, etc.
         # - run: git diff --name-only | xargs -I{} git add {}
       - run: |
-          git diff
-          if [ $? -eq 0 ]; then
+          git diff --exit-code
+          exit_code=$?
+          echo $exit_code
+          if [ $exit_code -eq 0 ]; then
             echo "No differences found."
           else
             echo "There are differences."
