@@ -53,7 +53,7 @@ jobs:
           AUTHOR=$(git log -1 --pretty=format:'%an')
 
           # Name associated with GitHub Actions (might vary based on your setup)
-          GITHUB_ACTIONS_AUTHOR="github-actions[bot]"
+          GITHUB_ACTIONS_AUTHOR="devdoshi[bot]"
 
           if [ "$AUTHOR" == "$GITHUB_ACTIONS_AUTHOR" ]; then
           echo "last was made by gha, reset and commit"
@@ -65,8 +65,13 @@ jobs:
         working-directory: project
       - run: git diff
         working-directory: project
-      - run: git diff --name-only | xargs -I{} git add {}
+      # if we just add what's already in git, we might miss new files like the first changelog.md, etc.
+      # - run: git diff --name-only | xargs -I{} git add {}
+      - run: |
+          jq ".updates[].path" < ../release-please/pr.json | xargs -I{} "git add {} || true"
         working-directory: project
       - run: |
+          git config user.name "devdoshi[bot]"
+          git config user.email 'devdoshi+github-actions-bot@users.noreply.github.com'
           git commit -m 'chore: release'
         working-directory: project
