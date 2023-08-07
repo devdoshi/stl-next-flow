@@ -68,7 +68,7 @@ jobs:
       # if we just add what's already in git, we might miss new files like the first changelog.md, etc.
       # - run: git diff --name-only | xargs -I{} git add {}
       - run: |
-          jq ".updates[].path" < ../release-please/pr.json | xargs -I{} "git add {} || true"
+          jq ".updates[].path" < ../release-please/pr.json | xargs -I{} git add {} || true
         working-directory: project
       - run: |
           git config user.name "devdoshi[bot]"
