@@ -26,7 +26,9 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: devdoshi/release-please
-          path: /home/runner/work/release-please
+          path: release-please
+      - name: Checkout code
+        uses: actions/checkout@v3
 
       - run: pwd
       - run: ls -la
@@ -35,6 +37,11 @@ jobs:
         run: npm install
         working-directory: release-please
 
-      - run: /home/runner/work/release-please/build/src/bin/release-please release-pr --trace --dry-run --release-type=node --repo-url=${{github.repository}} --token=${{secrets.GITHUB_TOKEN}} --target-branch=${{github.event.pull_request.head.ref}}
+      - run: ./build/src/bin/release-please release-pr --trace --dry-run --release-type=node --repo-url=${{github.repository}} --token=${{secrets.GITHUB_TOKEN}} --target-branch=${{github.event.pull_request.head.ref}}
+        working-directory: release-please
+      - run: cat pr.json || true
+        working-directory: release-please
+      - run: cat patch.diff || true
+        working-directory: release-please
       - run: cat pr.json || true
       - run: cat patch.diff || true
