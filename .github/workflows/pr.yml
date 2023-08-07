@@ -21,5 +21,5 @@ jobs:
           node-version: 18.x
       - run: ls -la $HOME
       - name: install release-please
-        run: npm install -g git+https://github.com/devdoshi/release-please.git
+        run: npm install --production=false -g git+https://github.com/devdoshi/release-please.git
       - run: ls -la $(which release-please)
