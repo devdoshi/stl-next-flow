@@ -38,15 +38,32 @@ jobs:
       - name: install modified release please
         run: npm install
         working-directory: release-please
-      
+
       - run: ls -la
         working-directory: release-please
 
       - run: node ./build/src/bin/release-please.js release-pr --trace --dry-run --release-type=node --repo-url=${{github.repository}} --token=${{secrets.GITHUB_TOKEN}} --target-branch=${{github.event.pull_request.head.ref}}
         working-directory: release-please
-      - run: cat pr.json || true
+      - run: cat pr.json
         working-directory: release-please
-      - run: cat patch.diff || true
+      - run: cat patch.diff
         working-directory: release-please
-      - run: cat pr.json || true
-      - run: cat patch.diff || true
+        # now we have a patch. remove any prior commits we made (as github-actions[bot])
+      - run: |
+          AUTHOR=$(git log -1 --pretty=format:'%an')
+
+          # Name associated with GitHub Actions (might vary based on your setup)
+          GITHUB_ACTIONS_AUTHOR="github-actions[bot]"
+
+          if [ "$AUTHOR" == "$GITHUB_ACTIONS_AUTHOR" ]; then
+          echo "last was made by gha, reset and commit"
+          git reset --hard HEAD^
+          else
+          echo "last was not made by gha, just commit"
+          fi
+          git apply ../release-please/patch.diff
+        working-directory: project
+      - run: git diff
+        working-directory: project
+      - run: jq ".updates[].path" < ../release-please/pr.json | xargs -I{} git add {} \|\| true
+        working-directory: project
