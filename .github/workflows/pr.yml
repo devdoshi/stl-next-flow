@@ -51,7 +51,7 @@ jobs:
         # now we have a patch. remove any prior commits we made (as github-actions[bot])
       - run: |
           git fetch
-          git checkout -b origin/${{github.event.pull_request.head.ref}}
+          git checkout -b ${{github.event.pull_request.head.ref}} origin/${{github.event.pull_request.head.ref}}
           git status
           git log
           AUTHOR=$(git log -1 --pretty=format:'%an')
@@ -85,11 +85,11 @@ jobs:
             git config user.email 'devdoshi+github-actions-bot@users.noreply.github.com'
             git commit -m "chore: release $RELEASE_VERSION"
             git remote get-url origin
-            git remote set-url origin https://x-access-token:${{ secrets.PAT }}@github.com/${{ github.repository }}
+            # git remote set-url origin https://x-access-token:${{ secrets.PAT }}@github.com/${{ github.repository }}
             git status
             git log
             git for-each-ref --format="%(refname)" refs/remotes/origin/
-            git push --verbose --force-with-lease --set-upstream origin ${{github.event.pull_request.head.ref}} || true
+            # git push --verbose --force-with-lease --set-upstream origin ${{github.event.pull_request.head.ref}} || true
             git push --verbose --force-with-lease --set-upstream origin ${{github.event.pull_request.head.ref}}
             
           fi
