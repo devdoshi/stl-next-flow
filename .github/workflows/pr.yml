@@ -65,5 +65,8 @@ jobs:
         working-directory: project
       - run: git diff
         working-directory: project
-      - run: jq ".updates[].path" < ../release-please/pr.json | xargs -I{} git add {} \|\| true
+      - run: git diff --name-only | xargs -I{} git add {}
+        working-directory: project
+      - run: |
+          git commit -m 'chore: release'
         working-directory: project
