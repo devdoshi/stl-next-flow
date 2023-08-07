@@ -34,6 +34,7 @@ jobs:
         run: npm install
         working-directory: release-please
 
-      - run: $GITHUB_WORKSPACE/release-please/build/src/bin/release-please release-pr --trace --dry-run --release-type=node --repo-url=${{github.repository}} --token=${{secrets.GITHUB_TOKEN}} --target-branch=${{github.event.pull_request.head.ref}}
+      - run: ./release-please/build/src/bin/release-please release-pr --trace --dry-run --release-type=node --repo-url=${{github.repository}} --token=${{secrets.GITHUB_TOKEN}} --target-branch=${{github.event.pull_request.head.ref}}
+        working-directory: release-please
       - run: cat pr.json || true
       - run: cat patch.diff || true
