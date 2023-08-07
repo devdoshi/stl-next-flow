@@ -51,7 +51,7 @@ jobs:
         # now we have a patch. remove any prior commits we made (as github-actions[bot])
       - run: |
           git fetch
-          git checkout origin/${{github.event.pull_request.head.ref}}
+          git checkout -b origin/${{github.event.pull_request.head.ref}}
           AUTHOR=$(git log -1 --pretty=format:'%an')
 
           # Name associated with GitHub Actions (might vary based on your setup)
