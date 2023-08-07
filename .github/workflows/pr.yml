@@ -78,11 +78,12 @@ jobs:
           else
             echo "There are differences."
             jq ".updates[].path" < ../release-please/pr.json | xargs -I{} git add {} || true
+            RELEASE_VERSION=$(jq -r '"\(.title.version.major).\(.title.version.minor).\(.title.version.patch)"' < ../release-please/pr.json)
             git config user.name "devdoshi[bot]"
             git config user.email 'devdoshi+github-actions-bot@users.noreply.github.com'
-            git commit -m 'chore: release'
+            git commit -m "chore: release $RELEASE_VERSION"
             git remote get-url origin
-            git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
+            git remote set-url origin https://x-access-token:${{ secrets.PAT }}@github.com/${{ github.repository }}
             git push --verbose --force-with-lease --set-upstream origin ${{github.event.pull_request.head.ref}}
             
           fi
