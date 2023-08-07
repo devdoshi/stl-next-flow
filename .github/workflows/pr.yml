@@ -82,7 +82,7 @@ jobs:
             git config user.email 'devdoshi+github-actions-bot@users.noreply.github.com'
             git commit -m 'chore: release'
             git remote get-url origin
-            git push --verbose --force-with-lease
-            git push --verbose --force-with-lease origin ${{github.event.pull_request.head.ref}}
+            git push --verbose --force-with-lease --set-upstream origin origin/${{github.event.pull_request.head.ref}}
+            
           fi
         working-directory: project
