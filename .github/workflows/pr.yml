@@ -13,13 +13,20 @@ jobs:
       - name: Ensure this is a pull request from next to main
         run: exit 1
         if: github.event_name == 'pull_request' && github.event.pull_request.head.ref != 'next'
-      - name: Checkout code
-        uses: actions/checkout@v3
       - name: Setup node
         uses: actions/setup-node@v3
         with:
           node-version: 18.x
-      - run: ls -la $HOME
-      - name: install release-please
-        run: npm install --production=false -g git+https://github.com/devdoshi/release-please.git
-      - run: ls -la $(which release-please)
+
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          repository: devdoshi/release-please
+          path: release-please
+
+      - run: ls -la
+      - run: npm install && npm run compile
+        working-directory: release-please
+
+      - name: Checkout code
+        uses: actions/checkout@v3
