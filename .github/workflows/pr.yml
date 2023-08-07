@@ -50,6 +50,7 @@ jobs:
         working-directory: release-please
         # now we have a patch. remove any prior commits we made (as github-actions[bot])
       - run: |
+          git checkout ${{github.event.pull_request.head.ref}}
           AUTHOR=$(git log -1 --pretty=format:'%an')
 
           # Name associated with GitHub Actions (might vary based on your setup)
