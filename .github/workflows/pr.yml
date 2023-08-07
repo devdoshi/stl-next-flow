@@ -38,8 +38,11 @@ jobs:
       - name: install modified release please
         run: npm install
         working-directory: release-please
+      
+      - run: ls -la
+        working-directory: release-please
 
-      - run: ./build/src/bin/release-please release-pr --trace --dry-run --release-type=node --repo-url=${{github.repository}} --token=${{secrets.GITHUB_TOKEN}} --target-branch=${{github.event.pull_request.head.ref}}
+      - run: node ./build/src/bin/release-please.js release-pr --trace --dry-run --release-type=node --repo-url=${{github.repository}} --token=${{secrets.GITHUB_TOKEN}} --target-branch=${{github.event.pull_request.head.ref}}
         working-directory: release-please
       - run: cat pr.json || true
         working-directory: release-please
