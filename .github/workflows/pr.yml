@@ -1,10 +1,14 @@
 # on a pull request from next to main
 name: Draft Release
 
+permissions:
+  contents: write
+  pull-requests: write
+
 on:
   pull_request:
     branches:
-      - next
+      - main
 
 jobs:
   release:
@@ -12,14 +16,80 @@ jobs:
     steps:
       - name: Ensure this is a pull request from next to main
         run: exit 1
-        if: github.event_name == 'pull_request' && github.event.pull_request.base.ref != 'main'
-      - name: Checkout code
-        uses: actions/checkout@v3
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.ref != 'next'
       - name: Setup node
         uses: actions/setup-node@v3
         with:
           node-version: 18.x
-      - run: ls -la $HOME
-      - name: install release-please
-        run: npm install -g git+https://github.com/devdoshi/release-please.git
-      - run: ls -la $(which release-please)
+
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          repository: devdoshi/release-please
+          path: release-please
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          path: project
+
+      - run: pwd
+      - run: ls -la
+
+      - name: install modified release please
+        run: npm install
+        working-directory: release-please
+
+      - run: ls -la
+        working-directory: release-please
+
+      - run: node ./build/src/bin/release-please.js release-pr --trace --dry-run --release-type=node --repo-url=${{github.repository}} --token=${{secrets.GITHUB_TOKEN}} --target-branch=${{github.event.pull_request.head.ref}}
+        working-directory: release-please
+      - run: cat pr.json
+        working-directory: release-please
+      - run: cat patch.diff
+        working-directory: release-please
+        # now we have a patch. remove any prior commits we made (as github-actions[bot])
+      - run: |
+          git fetch
+          git checkout -b ${{github.event.pull_request.head.ref}} origin/${{github.event.pull_request.head.ref}}
+          git status
+          git log
+          AUTHOR=$(git log -1 --pretty=format:'%an')
+
+          # Name associated with GitHub Actions (might vary based on your setup)
+          GITHUB_ACTIONS_AUTHOR="devdoshi[bot]"
+
+          if [ "$AUTHOR" == "$GITHUB_ACTIONS_AUTHOR" ]; then
+          echo "last commit was made by bot, reset and apply the changes"
+          git reset --hard HEAD^
+          else
+          echo "last commit was not made by bot, just apply the changes"
+          fi
+          git apply ../release-please/patch.diff
+        working-directory: project
+        # if we just add what's already in git, we might miss new files like the first changelog.md, etc.
+        # - run: git diff --name-only | xargs -I{} git add {}
+      - run: |
+          set +e
+          git diff --exit-code
+          exit_code=$?
+          set -e
+          echo $exit_code
+          if [ $exit_code -eq 0 ]; then
+            echo "No differences found."
+          else
+            echo "There are differences."
+            jq ".updates[].path" < ../release-please/pr.json | xargs -I{} git add {} || true
+            RELEASE_VERSION=$(jq -r '"\(.title.version.major).\(.title.version.minor).\(.title.version.patch)"' < ../release-please/pr.json)
+            git config user.name "devdoshi[bot]"
+            git config user.email 'devdoshi+github-actions-bot@users.noreply.github.com'
+            git commit -m "chore: release $RELEASE_VERSION"
+            git remote get-url origin
+            git remote set-url origin https://x-access-token:${{ secrets.PAT }}@github.com/${{ github.repository }}
+            git status
+            git log
+            git for-each-ref --format="%(refname)" refs/remotes/origin/
+            git push --verbose --force-with-lease --set-upstream origin ${{github.event.pull_request.head.ref}}
+            
+          fi
+        working-directory: project
