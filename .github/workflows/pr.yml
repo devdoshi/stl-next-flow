@@ -17,6 +17,13 @@ jobs:
       - name: Ensure this is a pull request from next to main
         run: exit 1
         if: github.event_name == 'pull_request' && github.event.pull_request.head.ref != 'next'
+
+      - uses: google-github-actions/release-please-action@v3
+        with:
+          command: release-pr
+          release-type: node
+          package-name: my-package
+          default-branch: next
       - name: Setup node
         uses: actions/setup-node@v3
         with:
@@ -69,7 +76,8 @@ jobs:
         working-directory: project
         # if we just add what's already in git, we might miss new files like the first changelog.md, etc.
         # - run: git diff --name-only | xargs -I{} git add {}
-      - run: |
+      - name: Check if there is a diff and push the release commit
+        run: |
           set +e
           git diff --exit-code
           exit_code=$?
